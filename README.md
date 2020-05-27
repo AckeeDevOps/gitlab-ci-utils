@@ -29,7 +29,7 @@ continue.
 Usage example:
 
 ```yml
-wait for all pipelines results:
+wait for runtime:
   stage: wait
   image: beranm14/gitlab-ci-utils:latest
   script:
@@ -47,7 +47,7 @@ This script register record to domain at CloudFlare by given variables.
 Usage example:
 
 ```yml
-wait for all pipelines results:
+add cf record:
   stage: wait
   image: beranm14/gitlab-ci-utils:latest
   script:
@@ -65,5 +65,26 @@ Required variable:
  Optional variable:
 
  * `DOMAIN_RECORD_TYPE` - default is `CNAME`
+
+### cf_purge_by_url.sh
+
+This script purges CloudFlare cache by given URL
+
+Usage example:
+
+```yml
+clear cache by url:
+  stage: wait
+  image: beranm14/gitlab-ci-utils:latest
+  script:
+    - cf_purge_by_url.sh
+```
+
+Required variable:
+
+ * `DOMAIN_ZONE_ID` - CF zone id
+ * `DOMAIN_KEY` - CF access token
+ * `DOMAIN_EMAIL` - CF access email
+ * `PURGE_URL` - URL list to be purged from cache, each item should be separated by newline
 
 

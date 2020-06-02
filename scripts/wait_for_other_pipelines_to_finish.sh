@@ -8,7 +8,8 @@ fail() {
 }
 
 get_pipelines() {
-  curl -sS -H "Private-Token: $SECRET_GITLAB_ACCESS_TOKEN" "${CI_SERVER_URL}/api/v4/projects/${CI_PROJECT_ID}/pipelines?sha=${CI_COMMIT_SHA}" | jq -r
+  curl -sS -H "Private-Token: $SECRET_GITLAB_ACCESS_TOKEN" "${CI_SERVER_URL}/api/v4/projects/${CI_PROJECT_ID}/pipelines?sha=${CI_COMMIT_SHA}" | \
+      jq -r 'map(select(.ref | startswith("refs/merge-requests") | not))'
 }
 
 if [[ -z "${CI_PROJECT_ID-}" ]]; then

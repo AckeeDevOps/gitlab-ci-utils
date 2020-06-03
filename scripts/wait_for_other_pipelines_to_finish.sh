@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# This script is a workaround to prevent issues with detached pipelines,
+# see https://gitlab.com/gitlab-org/gitlab/-/issues/217340 and https://gitlab.com/gitlab-org/gitlab/-/issues/2950
+
 set -eu -o pipefail
 
 fail() {

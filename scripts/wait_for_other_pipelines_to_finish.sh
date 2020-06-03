@@ -7,9 +7,33 @@ fail() {
   exit 1
 }
 
+# Get non-detached pipelines for the current commit
 get_pipelines() {
-  curl -sS -H "Private-Token: $SECRET_GITLAB_ACCESS_TOKEN" "${CI_SERVER_URL}/api/v4/projects/${CI_PROJECT_ID}/pipelines?sha=${CI_COMMIT_SHA}" | \
+  curl -sS -H "Private-Token: $SECRET_GITLAB_ACCESS_TOKEN" \
+      "${CI_SERVER_URL}/api/v4/projects/${CI_PROJECT_ID}/pipelines?sha=${CI_COMMIT_SHA}" | \
       jq -r 'map(select(.ref | startswith("refs/merge-requests") | not))'
+}
+
+pipelines_active() {
+  get_pipelines | jq -e 'map(select(.status == "running" or .status == "pending" or .status == "created")) | length > 0' > /dev/null
+}
+
+pipelines_failed() {
+  local pipelines=$(get_pipelines)
+  if ! jq -e 'map(select(.status == "failed" or .status == "canceled")) | length > 0' <<< "$pipelines" > /dev/null; then
+    # there is no failed pipeline
+    return 1
+  fi
+  local latest_pipeline=$(jq -r '. | first' <<< "$pipelines")
+  if jq -e 'select(.status != "success")' <<< "$latest_pipeline" > /dev/null; then
+    # the latest pipeline was not successful
+    return 0
+  fi
+  # we consider the pipeline group to be successful when the latest pipeline is successful
+  # and all previous failed/canceled pipelines have updated_at and created_at < than created_at
+  # from the latest pipeline
+  jq -e --arg d "$(jq -r '.updated_at' <<< "$latest_pipeline")" \
+      '.[1:] | map(select(.status == "failed" or .status == "canceled")) | map(select(.updated_at >= $d or .created_at >= $d)) | length > 0' <<< "$pipelines" > /dev/null
 }
 
 if [[ -z "${CI_PROJECT_ID-}" ]]; then
@@ -26,14 +50,14 @@ if [[ -z "${SECRET_GITLAB_ACCESS_TOKEN-}" ]]; then
 fi
 
 printf 'Waiting...'
-while [[ $(get_pipelines | grep running | wc -l) -gt 1 ]]; do
+while pipelines_active; do
     printf '.'
     sleep 10
 done
 echo
 
-pipelines=$(get_pipelines)
-echo "$pipelines"
-if grep -q "failed" <<< "$pipelines"; then
+get_pipelines
+
+if pipelines_failed; then
     fail "Other pipeline in this merge request group already failed, check their status!"
 fi

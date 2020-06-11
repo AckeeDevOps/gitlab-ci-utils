@@ -12,9 +12,14 @@ fail() {
 
 # Get non-detached pipelines for the current commit
 get_pipelines() {
-  curl -sS -H "Private-Token: $SECRET_GITLAB_ACCESS_TOKEN" \
-      "${CI_SERVER_URL}/api/v4/projects/${CI_PROJECT_ID}/pipelines?sha=${CI_COMMIT_SHA}" | \
-      jq -r 'map(select(.ref | startswith("refs/merge-requests") | not))'
+  local result=$(curl -sS -w '\nhttp_code=%{http_code}\n' -H "Private-Token: $SECRET_GITLAB_ACCESS_TOKEN" \
+      "${CI_SERVER_URL}/api/v4/projects/${CI_PROJECT_ID}/pipelines?sha=${CI_COMMIT_SHA}")
+  local http_code=$(grep '^http_code=' <<< "$result" | cut -d= -f2)
+  local response=$(grep -v '^http_code=' <<< "$result")
+  if [ $http_code -gt 200 ]; then
+    fail "Could not get pipelines from GitLab API. HTTP status code: $http_code. Response: $response"
+  fi
+  jq -r 'map(select(.ref | startswith("refs/merge-requests") | not))' <<< "$response"
 }
 
 pipelines_active() {

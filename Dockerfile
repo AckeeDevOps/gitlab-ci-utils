@@ -6,7 +6,7 @@ COPY scripts/wait_for_other_pipelines_to_finish.sh /usr/local/bin/wait_for_other
 COPY scripts/wait_for_runtime.sh /usr/local/bin/wait_for_runtime.sh
 COPY scripts/cf_add_record.sh /usr/local/bin/cf_add_record.sh
 COPY scripts/cf_purge_by_url.sh /usr/local/bin/cf_purge_by_url.sh
-COPY scripts/fetch_helper_functions.sh /usr/local/bin/fetch_helper_functions.sh
+COPY scripts/helper_functions.sh /usr/local/bin/helper_functions.sh
 
 RUN wget -q https://releases.hashicorp.com/vault/1.4.0/vault_1.4.0_linux_amd64.zip -O vault.zip && \
     unzip vault.zip && \

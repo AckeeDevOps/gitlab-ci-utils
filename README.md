@@ -85,6 +85,7 @@ Required variable:
  * `DOMAIN_ZONE_ID` - CF zone id
  * `DOMAIN_KEY` - CF access token
  * `DOMAIN_EMAIL` - CF access email
- * `PURGE_URL` - URL list to be purged from cache, each item should be separated by newline
+ * `PURGE_URL` - URL list to be purged from cache, each item should be separated by `,` and put into "", e.g.:
+ `PURGE_URL='"https://example.com/index.html", "https://example.com/abc.js", "https://example.com/cba.js"'`
 
 

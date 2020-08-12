@@ -22,6 +22,8 @@ read_config() {
     if grep -q -v '^#' "$path"; then
       export $(grep -v '^#' "$path" | cut -d= -f1)
     fi
+  else
+    fail "Config $path does not exist or is empty"
   fi
 }
 
@@ -38,9 +40,24 @@ check_empty_vars() {
   fi
 }
 
+get_branch_config_path() {
+  if [ -f "$CI_PROJECT_DIR/ci-branch-config/$CI_COMMIT_REF_NAME.env" ]; then
+    echo ci-branch-config/"$CI_COMMIT_REF_NAME.env"
+  else
+    # Some projects use "release" branches in format `${ENVIRONMENT_NAME}-${SEMVER_TAG}`
+    local environment_name=$(echo "$CI_COMMIT_REF_NAME" | sed -E 's/(.+)-[0-9x]+\.[0-9]+\.[0-9]+/\1/')
+    if [ -f "$CI_PROJECT_DIR/ci-branch-config/$environment_name.env" ]; then
+      echo ci-branch-config/"$environment_name.env"
+    fi
+  fi
+}
+
 read_branch_config() {
   read_config ci-branch-config/common.env
-  read_config ci-branch-config/"$CI_COMMIT_REF_NAME.env"
+  local branch_config_path=$(get_branch_config_path)
+  if [ -n "$branch_config_path" ]; then
+    read_config "$branch_config_path"
+  fi
 }
 
 # we can't do this in `variables:`, because branch configuration
@@ -53,7 +70,7 @@ get_image_name() {
 # because it is not possible to use variables in `rules:exist`
 # see also https://gitlab.com/gitlab-org/gitlab/issues/16733
 skip_if_brach_config_missing() {
-  if [ ! -f ci-branch-config/"$CI_COMMIT_REF_NAME.env" ]; then
+  if [ -z "$(get_branch_config_path)" ]; then
     info "There is no ci-branch-config/$CI_COMMIT_REF_NAME.env for the current branch, job will be skipped."
     exit 0
   fi

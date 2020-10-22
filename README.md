@@ -61,7 +61,7 @@ Required variable:
  * `DOMAIN_EMAIL` - CF access email
  * `DOMAIN_CONTENT` - CF content of the report, e.g. `c.storage.googleapis.com`
  * `DOMAIN_NAME` - CF name of record, e.g. `myapp`
- 
+
  Optional variable:
 
  * `DOMAIN_RECORD_TYPE` - default is `CNAME`
@@ -87,5 +87,3 @@ Required variable:
  * `DOMAIN_EMAIL` - CF access email
  * `PURGE_URL` - URL list to be purged from cache, each item should be separated by `,` and put into "", e.g.:
  `PURGE_URL='"https://example.com/index.html", "https://example.com/abc.js", "https://example.com/cba.js"'`
-
-

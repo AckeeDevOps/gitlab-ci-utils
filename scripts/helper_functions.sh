@@ -91,6 +91,19 @@ docker_compose_ci() {
   cd "$OLDPWD"
 }
 
+create_docker_proxy_config() {
+  if [ -n "$HTTPS_PROXY" ]; then
+    info "HTTPS_PROXY variable found, creating config for Docker client"
+    if [ -f "$HOME/.docker/config.json"]; then warn "Docker config exists, skipping proxy setup."; exit 0;
+    else
+      mkdir $HOME/.docker/
+      echo "{\"proxies\":{\"default\":{\"httpsProxy\":\"$HTTPS_PROXY\"}}}" > $HOME/.docker/config.json;
+    fi
+    if [ -n "$HTTP_PROXY" ]; then cat <<< "$(jq ".proxies.default += {\"httpProxy\": \"$HTTPS_PROXY\"}" < $HOME/.docker/config.json)" > $HOME/.docker/config.json; fi
+    if [ -n "$NO_PROXY" ]; then cat <<< "$(jq ".proxies.default += {\"noProxy\": \"$NO_PROXY\"}" < $HOME/.docker/config.json)" > $HOME/.docker/config.json; fi
+  fi
+}
+
 init_ssh_agent() {
   if [ -n "$SECRET_GITLAB_SSH_KEY" ]; then
     eval $(ssh-agent -s) && echo "$SECRET_GITLAB_SSH_KEY" | ssh-add - && \

@@ -101,3 +101,52 @@ init_ssh_agent() {
 commits_count() {
   curl -s --HEAD --header "PRIVATE-TOKEN: $SECRET_GITLAB_ACCESS_TOKEN" "${CI_SERVER_URL}/api/v4/projects/$CI_PROJECT_ID/repository/commits?per_page=1&ref_name=$CI_COMMIT_REF_NAME" | grep x-total: | cut -d " " -f2
 }
+
+gcm_write_log() {
+  local log_name=$1
+  local payload=$2
+
+  gcloud logging write $log_name "$payload" --project=$GCP_PROJECT_ID --payload-type=json
+}
+
+gcm_write_metric() {
+  # metric format documentation: https://cloud.google.com/monitoring/custom-metrics/creating-metrics#writing-ts
+  local metric_type=$1
+  local labels=$2
+  local value=$3
+  local value_type=$4
+  local metric_kind=${5:-GAUGE}
+
+  curl -sS \
+    -H "Authorization: Bearer $(gcloud auth application-default print-access-token)" \
+    -H 'Accept: application/json' \
+    -H 'Content-Type: application/json; charset=utf-8' \
+    "https://monitoring.googleapis.com/v3/projects/${GCP_PROJECT_ID}/timeSeries" \
+    -d "{
+      \"timeSeries\": [
+        {
+          \"metric\": {
+            \"type\":\"custom.googleapis.com/$metric_type\",
+            \"labels\": $labels
+          },
+          \"resource\": {
+            \"type\": \"global\",
+            \"labels\": {
+              \"project_id\":\"$GCP_PROJECT_ID\"
+            }
+          },
+          \"metricKind\": \"$metric_kind\",
+          \"points\": [
+            {
+              \"interval\": {
+                \"endTime\":\"$(date -Iseconds)\"
+              },
+              \"value\": {
+                \"$value_type\": $value
+              }
+            }
+          ]
+        }
+      ]
+    }"
+}

@@ -102,6 +102,14 @@ commits_count() {
   curl -s --HEAD --header "PRIVATE-TOKEN: $SECRET_GITLAB_ACCESS_TOKEN" "${CI_SERVER_URL}/api/v4/projects/$CI_PROJECT_ID/repository/commits?per_page=1&ref_name=$CI_COMMIT_REF_NAME" | grep x-total: | cut -d " " -f2
 }
 
+generate_changelog() {
+  # fetch all commits between current SHA and SHA-1 (previous commit on autodeploy branches should be merge commit so it returns list of changes since last merge == since last version)
+  curl -s -H "PRIVATE-TOKEN: ${SECRET_GITLAB_ACCESS_TOKEN}" "${CI_SERVER_URL}/api/v4/projects/${CI_PROJECT_ID}/repository/compare?from=${CI_COMMIT_SHA}~1&to=${CI_COMMIT_SHA}" |
+  grep -Eo '"title":".*?",' | # find all commit titles
+  sed -n 's|.*"title":"\([^"]*\)".*|• \1|p' | # extract and format commit titles
+  tail -n +2 # remove first title which is duplicate of the last one (see raw output of curl above)
+}
+
 gcm_write_log() {
   local log_name=$1
   local payload=$2

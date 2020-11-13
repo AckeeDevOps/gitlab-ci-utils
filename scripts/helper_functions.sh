@@ -101,3 +101,60 @@ init_ssh_agent() {
 commits_count() {
   curl -s --HEAD --header "PRIVATE-TOKEN: $SECRET_GITLAB_ACCESS_TOKEN" "${CI_SERVER_URL}/api/v4/projects/$CI_PROJECT_ID/repository/commits?per_page=1&ref_name=$CI_COMMIT_REF_NAME" | grep x-total: | cut -d " " -f2
 }
+
+generate_changelog() {
+  # fetch all commits between current SHA and SHA-1 (previous commit on autodeploy branches should be merge commit so it returns list of changes since last merge == since last version)
+  curl -s -H "PRIVATE-TOKEN: ${SECRET_GITLAB_ACCESS_TOKEN}" "${CI_SERVER_URL}/api/v4/projects/${CI_PROJECT_ID}/repository/compare?from=${CI_COMMIT_SHA}~1&to=${CI_COMMIT_SHA}" |
+  grep -Eo '"title":".*?",' | # find all commit titles
+  sed -n 's|.*"title":"\([^"]*\)".*|• \1|p' | # extract and format commit titles
+  tail -n +2 # remove first title which is duplicate of the last one (see raw output of curl above)
+}
+
+gcm_write_log() {
+  local log_name=$1
+  local payload=$2
+
+  gcloud logging write $log_name "$payload" --project=$GCP_PROJECT_ID --payload-type=json
+}
+
+gcm_write_metric() {
+  # metric format documentation: https://cloud.google.com/monitoring/custom-metrics/creating-metrics#writing-ts
+  local metric_type=$1
+  local labels=$2
+  local value=$3
+  local value_type=$4
+  local metric_kind=${5:-GAUGE}
+
+  curl -sS \
+    -H "Authorization: Bearer $(gcloud auth application-default print-access-token)" \
+    -H 'Accept: application/json' \
+    -H 'Content-Type: application/json; charset=utf-8' \
+    "https://monitoring.googleapis.com/v3/projects/${GCP_PROJECT_ID}/timeSeries" \
+    -d "{
+      \"timeSeries\": [
+        {
+          \"metric\": {
+            \"type\":\"custom.googleapis.com/$metric_type\",
+            \"labels\": $labels
+          },
+          \"resource\": {
+            \"type\": \"global\",
+            \"labels\": {
+              \"project_id\":\"$GCP_PROJECT_ID\"
+            }
+          },
+          \"metricKind\": \"$metric_kind\",
+          \"points\": [
+            {
+              \"interval\": {
+                \"endTime\":\"$(date -Iseconds)\"
+              },
+              \"value\": {
+                \"$value_type\": $value
+              }
+            }
+          ]
+        }
+      ]
+    }"
+}

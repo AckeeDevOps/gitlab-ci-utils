@@ -122,6 +122,7 @@ gcm_write_metric() {
   local metric_type=$1
   local labels=$2
   local value=$3
+  # https://cloud.google.com/monitoring/api/ref_v3/rest/v3/TypedValue
   local value_type=$4
   local metric_kind=${5:-GAUGE}
 

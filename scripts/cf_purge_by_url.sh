@@ -24,4 +24,4 @@ curl -X POST "https://api.cloudflare.com/client/v4/zones/${DOMAIN_ZONE_ID}/purge
      -H "Content-Type:application/json" \
      -H "X-Auth-Key: ${DOMAIN_KEY}" \
      -H "X-Auth-Email: ${DOMAIN_EMAIL}" \
-     --data "{\"files\":[${PURGE_URL}]}"
+     --data "{\"files\":${PURGE_URL}}"

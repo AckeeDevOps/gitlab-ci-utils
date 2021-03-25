@@ -1,5 +1,8 @@
 #!/bin/bash
 
+if [[ -z "${DOMAIN_PROXIED}" ]]; then
+    DOMAIN_PROXIED="true"
+fi
 
 if [[ -z "${DOMAIN_RECORD_TYPE}" ]]; then
     DOMAIN_RECORD_TYPE="CNAME"
@@ -40,7 +43,7 @@ if [[ $(curl -X GET "https://api.cloudflare.com/client/v4/zones/${DOMAIN_ZONE_ID
         -H "Content-Type:application/json" \
         -H "X-Auth-Key: ${DOMAIN_KEY}" \
         -H "X-Auth-Email: ${DOMAIN_EMAIL}" \
-        --data "{\"type\":\"${DOMAIN_RECORD_TYPE}\",\"name\":\"${DOMAIN_NAME}\",\"content\":\"${DOMAIN_CONTENT}\",\"ttl\":1,\"proxied\":true}" 2>/dev/null \
+        --data "{\"type\":\"${DOMAIN_RECORD_TYPE}\",\"name\":\"${DOMAIN_NAME}\",\"content\":\"${DOMAIN_CONTENT}\",\"ttl\":1,\"proxied\":${DOMAIN_PROXIED}}" 2>/dev/null \
         | jq .success \
         | grep true \
     || echo -e "\033[0;31mERROR: Creating a CloudFlare DNS type ${DOMAIN_RECORD_TYPE} record ${DOMAIN_NAME} failed\033[0m" >&2

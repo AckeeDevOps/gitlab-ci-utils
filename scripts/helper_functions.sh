@@ -48,6 +48,8 @@ get_branch_config_path() {
     local environment_name=$(echo "$CI_COMMIT_REF_NAME" | sed -E 's/(.+)-[0-9x]+\.[0-9]+\.[0-9]+/\1/')
     if [ -f "$CI_PROJECT_DIR/ci-branch-config/$environment_name.env" ]; then
       echo ci-branch-config/"$environment_name.env"
+    elif [ -f "$CI_PROJECT_DIR/ci-branch-config/default.env" ]; then
+      echo ci-branch-config/default.env
     fi
   fi
 }

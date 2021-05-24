@@ -52,6 +52,12 @@ get_branch_config_path() {
   fi
 }
 
+is_potentially_dynamic_environment() {
+  if [[ "$CI_COMMIT_BRANCH" =~ development.* ]]; then
+      echo ci-branch-config/"$CI_COMMIT_BRANCH.env"
+  fi
+}
+
 read_branch_config() {
   read_config ci-branch-config/common.env
   local branch_config_path=$(get_branch_config_path)
@@ -69,6 +75,17 @@ get_image_name() {
 
 # because it is not possible to use variables in `rules:exist`
 # see also https://gitlab.com/gitlab-org/gitlab/issues/16733
+skip_if_brach_config_missing_dynamic_env() {
+  if [ -z "$(get_branch_config_path)" ]; then
+    if [ -n "$(is_potentially_dynamic_environment)" ]; then
+      info "There is no ci-branch-config/$CI_COMMIT_REF_NAME.env but branch can be potentially used for test environment deployment."
+    else
+      info "There is no ci-branch-config/$CI_COMMIT_REF_NAME.env for the current branch, job will be skipped."
+      exit 0
+    fi
+  fi
+}
+
 skip_if_brach_config_missing() {
   if [ -z "$(get_branch_config_path)" ]; then
     info "There is no ci-branch-config/$CI_COMMIT_REF_NAME.env for the current branch, job will be skipped."

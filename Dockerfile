@@ -2,6 +2,10 @@ FROM docker:stable
 
 MAINTAINER Martin Beranek (martin.beranek112@gmail.com)
 
+LABEL tag="ackee-gitlab" \
+      author="Ackee 🦄" \
+      description="An image containing a few scripts mainly focused on GitLab API calls"
+
 COPY scripts/wait_for_other_pipelines_to_finish.sh /usr/local/bin/wait_for_other_pipelines_to_finish.sh
 COPY scripts/wait_for_runtime.sh /usr/local/bin/wait_for_runtime.sh
 COPY scripts/cf_add_record.sh /usr/local/bin/cf_add_record.sh

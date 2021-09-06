@@ -20,7 +20,7 @@ RUN wget -q https://releases.hashicorp.com/vault/1.5.4/vault_1.5.4_linux_amd64.z
 
 RUN apk update \
     && apk upgrade \
-    && apk add --no-cache bash jq curl openssh python3 py3-pip \
+    && apk add --no-cache bash jq curl openssh python3 py3-pip git \
     && pip3 install yq \
     && chmod +x /usr/local/bin/wait_for_other_pipelines_to_finish.sh \
     && chmod +x /usr/local/bin/wait_for_runtime.sh \

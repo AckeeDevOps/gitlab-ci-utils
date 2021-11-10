@@ -1,0 +1,5 @@
+read_config ci-branch-config/common.env
+local branch_config_path=$(get_branch_config_path)
+if [ -n "$branch_config_path" ]; then
+  read_config "$branch_config_path"
+fi

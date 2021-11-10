@@ -1,0 +1,40 @@
+# metric format documentation: https://cloud.google.com/monitoring/custom-metrics/creating-metrics#writing-ts
+local metric_type=$1
+local labels=$2
+local value=$3
+# https://cloud.google.com/monitoring/api/ref_v3/rest/v3/TypedValue
+local value_type=$4
+local metric_kind=${5:-GAUGE}
+
+curl -sS \
+  -H "Authorization: Bearer $(gcloud auth application-default print-access-token)" \
+  -H 'Accept: application/json' \
+  -H 'Content-Type: application/json; charset=utf-8' \
+  "https://monitoring.googleapis.com/v3/projects/${GCP_PROJECT_ID}/timeSeries" \
+  -d "{
+    \"timeSeries\": [
+      {
+        \"metric\": {
+          \"type\":\"custom.googleapis.com/$metric_type\",
+          \"labels\": $labels
+        },
+        \"resource\": {
+          \"type\": \"global\",
+          \"labels\": {
+            \"project_id\":\"$GCP_PROJECT_ID\"
+          }
+        },
+        \"metricKind\": \"$metric_kind\",
+        \"points\": [
+          {
+            \"interval\": {
+              \"endTime\":\"$(date -Iseconds)\"
+            },
+            \"value\": {
+              \"$value_type\": $value
+            }
+          }
+        ]
+      }
+    ]
+  }"

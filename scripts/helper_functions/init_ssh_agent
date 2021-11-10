@@ -1,0 +1,4 @@
+if [ -n "$SECRET_GITLAB_SSH_KEY" ]; then
+  eval $(ssh-agent -s) && echo "$SECRET_GITLAB_SSH_KEY" | ssh-add - && \
+  mkdir -p ~/.ssh && ssh-keyscan -t rsa gitlab.ack.ee >> ~/.ssh/known_hosts
+fi

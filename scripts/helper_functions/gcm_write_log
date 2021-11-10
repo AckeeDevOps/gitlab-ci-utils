@@ -1,0 +1,4 @@
+local log_name=$1
+local payload=$2
+
+gcloud logging write $log_name "$payload" --project=$GCP_PROJECT_ID --payload-type=json

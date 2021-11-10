@@ -1,0 +1,6 @@
+local command=$@
+
+cd "$CI_PROJECT_DIR/docker-compose"
+DOCKER_IMAGE_NAME="$(get_image_name)" docker-compose -p "$DOCKER_COMPOSE_PROJECT_NAME" \
+    -f docker-compose.yml -f docker-compose.ci.yml $command
+cd "$OLDPWD"

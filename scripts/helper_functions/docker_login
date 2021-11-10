@@ -1,0 +1,2 @@
+echo "$GCP_SA_KEY" | base64 -d > "$GCP_SA_KEY_JSON_PATH"
+docker login -u _json_key --password-stdin eu.gcr.io < "$GCP_SA_KEY_JSON_PATH"

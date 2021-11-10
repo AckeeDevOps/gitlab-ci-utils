@@ -1,0 +1,9 @@
+local path="$CI_PROJECT_DIR/$1"
+if [ -s "$path" ]; then
+  source "$path"
+  if grep -q -v '^#' "$path"; then
+    export $(grep -v '^#' "$path" | cut -d= -f1)
+  fi
+else
+  fail "Config $path does not exist or is empty"
+fi

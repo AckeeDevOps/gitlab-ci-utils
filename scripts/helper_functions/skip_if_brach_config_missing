@@ -1,0 +1,7 @@
+# because it is not possible to use variables in `rules:exist`
+# see also https://gitlab.com/gitlab-org/gitlab/issues/16733
+
+if [ -z "$(get_branch_config_path)" ]; then
+  info "There is no ci-branch-config/$CI_COMMIT_REF_NAME.env for the current branch, job will be skipped."
+  exit 0
+fi

@@ -1,0 +1,10 @@
+fail_flag=false
+for var in "$@"; do
+if [ -z "$(eval echo \$"$var")" ]; then
+  error "Variable $var is not set."
+  fail_flag=true
+fi
+done
+if [ "$fail_flag" = true ]; then
+  exit 1
+fi

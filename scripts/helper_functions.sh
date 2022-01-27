@@ -63,7 +63,6 @@ read_branch_config() {
 # we can't do this in `variables:`, because branch configuration
 # is loaded after resolving `$GCP_PROJECT_ID` variable
 get_image_name() {
-  read_branch_config
   echo "$DOCKER_REGISTRY_URL/$GCP_PROJECT_ID/$CI_PROJECT_NAME"
 }
 

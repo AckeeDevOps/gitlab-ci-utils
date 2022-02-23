@@ -12,7 +12,7 @@ COPY scripts/cf_add_record.sh /usr/local/bin/cf_add_record.sh
 COPY scripts/cf_purge_by_url.sh /usr/local/bin/cf_purge_by_url.sh
 COPY scripts/helper_functions.sh /usr/local/bin/helper_functions.sh
 
-RUN wget -q https://releases.hashicorp.com/vault/1.5.4/vault_1.5.4_linux_amd64.zip -O vault.zip && \
+RUN wget -q https://releases.hashicorp.com/vault/1.9.2/vault_1.9.2_linux_amd64.zip -O vault.zip && \
     unzip vault.zip && \
     mv vault /usr/local/bin/vault && \
     chmod +x /usr/local/bin/vault && \

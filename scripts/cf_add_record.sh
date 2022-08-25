@@ -37,7 +37,7 @@ if [[ -n "${DOMAIN_KEY}" ]]; then
        -H "X-Auth-Key: ${DOMAIN_KEY}" \
        -H "X-Auth-Email: ${DOMAIN_EMAIL}" \
        -H "Content-Type: application/json" | \
-       jq ".result | map(select(.zone_id == \"${DOMAIN_ZONE_ID}\")) | map(select(.type == \"${DOMAIN_RECORD_TYPE}\")) | map(select(.content == \"${DOMAIN_CONTENT}\"))") == "[]" ]]; then
+       jq ".result | map(select(.zone_id == \"${DOMAIN_ZONE_ID}\")) | map(select(.type == \"${DOMAIN_RECORD_TYPE}\")) | map(select(.name == \"${DOMAIN_NAME}\"))") == "[]" ]]; then
 
       curl -X POST "https://api.cloudflare.com/client/v4/zones/${DOMAIN_ZONE_ID}/dns_records" \
           -H "Content-Type:application/json" \
@@ -55,7 +55,7 @@ elif [[ -n "${DOMAIN_TOKEN}" ]]; then
   if [[ $(curl -X GET "https://api.cloudflare.com/client/v4/zones/${DOMAIN_ZONE_ID}/dns_records" \
        -H "Authorization: Bearer ${DOMAIN_TOKEN}" \
        -H "Content-Type: application/json" | \
-       jq ".result | map(select(.zone_id == \"${DOMAIN_ZONE_ID}\")) | map(select(.type == \"${DOMAIN_RECORD_TYPE}\")) | map(select(.content == \"${DOMAIN_CONTENT}\"))") == "[]" ]]; then
+       jq ".result | map(select(.zone_id == \"${DOMAIN_ZONE_ID}\")) | map(select(.type == \"${DOMAIN_RECORD_TYPE}\")) | map(select(.name == \"${DOMAIN_NAME}\"))") == "[]" ]]; then
 
       curl -X POST "https://api.cloudflare.com/client/v4/zones/${DOMAIN_ZONE_ID}/dns_records" \
           -H "Content-Type:application/json" \

@@ -63,7 +63,11 @@ read_branch_config() {
 # we can't do this in `variables:`, because branch configuration
 # is loaded after resolving `$GCP_PROJECT_ID` variable
 get_image_name() {
-  echo "$DOCKER_REGISTRY_URL/$GCP_PROJECT_ID/$CI_PROJECT_NAME"
+  if [ "$DOCKER_REGISTRY_TYPE" == "artifact" ]; then
+    echo "$DOCKER_REGISTRY_URL/$GCP_PROJECT_ID/${GCP_PROJECT_ID}-docker/$CI_PROJECT_NAME"
+  else
+    echo "$DOCKER_REGISTRY_URL/$GCP_PROJECT_ID/$CI_PROJECT_NAME"
+  fi
 }
 
 # because it is not possible to use variables in `rules:exist`
@@ -77,7 +81,7 @@ skip_if_brach_config_missing() {
 
 docker_login() {
   echo "$GCP_SA_KEY" | base64 -d > "$GCP_SA_KEY_JSON_PATH"
-  docker login -u _json_key --password-stdin eu.gcr.io < "$GCP_SA_KEY_JSON_PATH"
+  docker login -u _json_key --password-stdin $DOCKER_REGISTRY_URL < "$GCP_SA_KEY_JSON_PATH"
 }
 
 # run Docker Compose CI override
